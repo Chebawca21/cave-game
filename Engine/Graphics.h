@@ -24,6 +24,9 @@
 #include <wrl.h>
 #include "ChiliException.h"
 #include "Colors.h"
+#include "Surface.h"
+#include "Rect.h"
+#include <cassert>
 
 class Graphics
 {
@@ -57,6 +60,52 @@ public:
 		PutPixel( x,y,{ unsigned char( r ),unsigned char( g ),unsigned char( b ) } );
 	}
 	void PutPixel( int x,int y,Color c );
+	template<typename E>
+	void DrawSprite(int x, int y, const Surface& s, E effect)
+	{
+		DrawSprite(x, y, { 0, s.GetWidth(), 0, s.GetHeight() }, s, effect);
+	}
+	template<typename E>
+	void DrawSprite(int x, int y, const RectI& src, const Surface& s, E effect)
+	{
+		DrawSprite(x, y, src, GetScreenRect(), s, effect);
+	}
+	template<typename E>
+	void DrawSprite(int x, int y, RectI src, const RectI& clip, const Surface& s, E effect)
+	{
+		assert(src.left >= 0);
+		assert(src.right <= s.GetWidth());
+		assert(src.bottom >= 0);
+		assert(src.top <= s.GetHeight());
+
+		if (x < clip.left)
+		{
+			src.left += clip.left - x;
+			x = clip.left;
+		}
+		if (y < clip.top)
+		{
+			src.top += clip.top - y;
+			y = clip.top;
+		}
+		if (x + src.GetWidth() >= clip.right)
+		{
+			src.right -= x + src.GetWidth() - clip.right;
+		}
+		if (y + src.GetHeight() >= clip.bottom)
+		{
+			src.bottom -= y + src.GetHeight() - clip.bottom;
+		}
+
+		for (int sx = src.left; sx < src.right; sx++)
+		{
+			for (int sy = src.top; sy < src.bottom; sy++)
+			{
+				effect(x + sx - src.left, y + sy - src.top, s.GetPixel(sx, sy), *this);
+			}
+		}
+	}
+	static RectI GetScreenRect();
 	~Graphics();
 private:
 	Microsoft::WRL::ComPtr<IDXGISwapChain>				pSwapChain;
