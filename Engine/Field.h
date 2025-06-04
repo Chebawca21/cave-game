@@ -5,21 +5,22 @@
 
 class Field
 {
+public:
+	enum class Wall
+	{
+		None,
+		Sand,
+		Rock,
+		HardRock
+	};
 private:
 	class Tile
 	{
 	public:
-		enum class Wall
-		{
-			None,
-			Sand,
-			Rock,
-			HardRock
-		};
-	public:
 		Tile(int x, int y, Wall wall);
-		void SetPos(const Vec2I& pos);
+		void SetWall(Wall wall);
 		void Draw(const Vec2I& screenPos, const Surface& sprite, Graphics& gfx) const;
+		Wall GetWall() const;
 	private:
 		static constexpr int width = 32;
 		static constexpr int height = 32;
@@ -29,6 +30,8 @@ private:
 public:
 	Field();
 	void Draw(Graphics& gfx) const;
+	void DestroyWall(const Vec2I& pos);
+	Wall GetWall(Vec2I pos) const;
 private:
 	Surface background;
 	std::vector<Tile> tiles;

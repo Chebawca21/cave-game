@@ -57,7 +57,7 @@ void Game::UpdateModel()
 	{
 		dir.x++;
 	}
-	frog.Update(dir, dt);
+	frog.Update(dir, dt, field);
 }
 
 void Game::ComposeFrame()

@@ -13,13 +13,21 @@ Frog::Frog(int x, int y)
 	}
 }
 
-void Frog::Update(const Vec2I& dir, float dt)
+void Frog::Update(const Vec2I& dir, float dt, Field& field)
 {
-	if (vel.GetLength() == 0.0f)
+	if (vel.GetLength() == 0.0f && dir.GetLength() != 0)
 	{
-		pos += dir;
-		vel += Vec2F(dir) * speed;
-		dist += vel * dt;
+		Field::Wall wall = field.GetWall(pos + dir);
+		if (wall != Field::Wall::Rock && wall != Field::Wall::HardRock)
+		{
+			pos += dir;
+			vel += Vec2F(dir) * speed;
+			dist += vel * dt;
+			if (wall == Field::Wall::Sand)
+			{
+				field.DestroyWall(pos);
+			}
+		}
 	}
 	else
 	{
@@ -41,4 +49,9 @@ void Frog::Draw(const Vec2I& screenPos, Graphics& gfx) const
 		posFixed -= Vec2I(vel.GetNormalized());
 	}
 	animations[curAnim].Draw((screenPos + Vec2I(dist)) + (posFixed * Vec2I(width, height)), gfx);
+}
+
+Vec2I Frog::GetPos() const
+{
+	return pos;
 }
