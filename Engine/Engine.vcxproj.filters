@@ -19,6 +19,9 @@
     <Filter Include="Resource Files\Sprites">
       <UniqueIdentifier>{3ed5303d-94b7-4884-8cc4-73928a7484d1}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Maps">
+      <UniqueIdentifier>{bba681a3-2c51-4c72-8b43-4caa4f773219}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="ChiliWin.h">

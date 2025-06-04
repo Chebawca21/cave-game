@@ -1,6 +1,7 @@
 #include "Field.h"
 #include "SpriteEffect.h"
 #include "Rect.h"
+#include <fstream>
 
 Field::Tile::Tile(int x, int y, Wall wall)
 	:
@@ -27,32 +28,42 @@ Field::Wall Field::Tile::GetWall() const
 	return wall;
 }
 
-Field::Field()
+Field::Field(const std::string& filename)
 	:
 	background("Sprites\\background.bmp")
 {
-	tiles.reserve(width * height);
-	for (int i = 0; i < width * height; i++)
+	std::ifstream map(filename);
+	/*tiles.reserve(width * height);*/
+	int i = 0;
+	int rows = 0;
+	for (std::string line; std::getline(map, line); )
 	{
-		Wall wall;
-		if (i % width == 0 || i % width == width - 1 || i < width || i > (width * height) - width)
+		for (auto c : line)
 		{
-			wall = Wall::HardRock;
+			Wall wall;
+			if (c == 'H')
+			{
+				wall = Wall::HardRock;
+			}
+			else if (c == 'R')
+			{
+				wall = Wall::Rock;
+			}
+			else if (c == 'S')
+			{
+				wall = Wall::Sand;
+			}
+			else
+			{
+				wall = Wall::None;
+			}
+			tiles.emplace_back(i % width, i / width, wall);
+			i++;
 		}
-		else if (i % 5 == 0)
-		{
-			wall = Wall::Rock;
-		}
-		else if (i % 4 == 0)
-		{
-			wall = Wall::Sand;
-		}
-		else
-		{
-			wall = Wall::None;
-		}
-		tiles.emplace_back( i % width, i / width, wall );
+		rows++;
 	}
+	height = rows;
+	width = tiles.size() / height;
 }
 
 Field::Wall Field::GetWall(Vec2I pos) const

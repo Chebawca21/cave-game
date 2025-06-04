@@ -28,13 +28,13 @@ private:
 		Wall wall = Wall::None;
 	};
 public:
-	Field();
+	Field(const std::string& filename);
 	void Draw(Graphics& gfx) const;
 	void DestroyWall(const Vec2I& pos);
 	Wall GetWall(Vec2I pos) const;
 private:
 	Surface background;
 	std::vector<Tile> tiles;
-	const int width = 18;
-	const int height = 10;
+	int width = 18;
+	int height = 10;
 };
