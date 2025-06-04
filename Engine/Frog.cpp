@@ -1,4 +1,5 @@
 #include "Frog.h"
+#include <cmath>
 
 Frog::Frog(int x, int y)
 	:
@@ -14,26 +15,30 @@ Frog::Frog(int x, int y)
 
 void Frog::Update(const Vec2I& dir, float dt)
 {
-	if (dir.x > 0)
+	if (vel.GetLength() == 0.0f)
 	{
-		pos.x++;
+		pos += dir;
+		vel += Vec2F(dir) * speed;
+		dist += vel * dt;
 	}
-	else if (dir.x < 0)
+	else
 	{
-		pos.x--;
-	}
-	else if (dir.y > 0)
-	{
-		pos.y++;
-	}
-	else if (dir.y < 0)
-	{
-		pos.y--;
+		dist += vel * dt;
+		if (abs(dist.x) >= abs(width) || abs(dist.y) >= abs(height))
+		{
+			dist = { 0.0f, 0.0f };
+			vel = { 0.0f, 0.0f };
+		}
 	}
 	animations[curAnim].Update(dt);
 }
 
 void Frog::Draw(const Vec2I& screenPos, Graphics& gfx) const
 {
-	animations[curAnim].Draw(screenPos + (pos * Vec2I(width, height)), gfx);
+	Vec2I posFixed = pos;
+	if (vel.GetLength() > 0.0f)
+	{
+		posFixed -= Vec2I(vel.GetNormalized());
+	}
+	animations[curAnim].Draw((screenPos + Vec2I(dist)) + (posFixed * Vec2I(width, height)), gfx);
 }

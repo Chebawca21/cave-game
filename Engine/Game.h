@@ -48,7 +48,5 @@ private:
 	FrameTimer ft;
 	Field field;
 	Frog frog;
-	float inputBlockTime = 0.1f;
-	float currInputBlock = 0.0f;
 	/********************************/
 };

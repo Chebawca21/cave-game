@@ -41,29 +41,21 @@ void Game::UpdateModel()
 {
 	Vec2I dir = { 0, 0 };
 	float dt = ft.Mark();
-	if (currInputBlock > 0.0f)
-	{
-		currInputBlock -= dt;
-	}
-	else if (wnd.kbd.KeyIsPressed(VK_UP))
+	if (wnd.kbd.KeyIsPressed(VK_UP))
 	{
 		dir.y--;
-		currInputBlock = inputBlockTime;
 	}
 	else if (wnd.kbd.KeyIsPressed(VK_DOWN))
 	{
 		dir.y++;
-		currInputBlock = inputBlockTime;
 	}
 	else if (wnd.kbd.KeyIsPressed(VK_LEFT))
 	{
 		dir.x--;
-		currInputBlock = inputBlockTime;
 	}
 	else if (wnd.kbd.KeyIsPressed(VK_RIGHT))
 	{
 		dir.x++;
-		currInputBlock = inputBlockTime;
 	}
 	frog.Update(dir, dt);
 }
