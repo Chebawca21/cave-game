@@ -23,6 +23,9 @@
 #include "Keyboard.h"
 #include "Mouse.h"
 #include "Graphics.h"
+#include "FrameTimer.h"
+#include "Field.h"
+#include "Frog.h"
 
 class Game
 {
@@ -42,5 +45,10 @@ private:
 	Graphics gfx;
 	/********************************/
 	/*  User Variables              */
+	FrameTimer ft;
+	Field field;
+	Frog frog;
+	float inputBlockTime = 0.1f;
+	float currInputBlock = 0.0f;
 	/********************************/
 };

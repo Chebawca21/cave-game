@@ -24,7 +24,8 @@
 Game::Game( MainWindow& wnd )
 	:
 	wnd( wnd ),
-	gfx( wnd )
+	gfx( wnd ),
+	frog(1, 1)
 {
 }
 
@@ -38,8 +39,37 @@ void Game::Go()
 
 void Game::UpdateModel()
 {
+	Vec2I dir = { 0, 0 };
+	float dt = ft.Mark();
+	if (currInputBlock > 0.0f)
+	{
+		currInputBlock -= dt;
+	}
+	else if (wnd.kbd.KeyIsPressed(VK_UP))
+	{
+		dir.y--;
+		currInputBlock = inputBlockTime;
+	}
+	else if (wnd.kbd.KeyIsPressed(VK_DOWN))
+	{
+		dir.y++;
+		currInputBlock = inputBlockTime;
+	}
+	else if (wnd.kbd.KeyIsPressed(VK_LEFT))
+	{
+		dir.x--;
+		currInputBlock = inputBlockTime;
+	}
+	else if (wnd.kbd.KeyIsPressed(VK_RIGHT))
+	{
+		dir.x++;
+		currInputBlock = inputBlockTime;
+	}
+	frog.Update(dir, dt);
 }
 
 void Game::ComposeFrame()
 {
+	field.Draw(gfx);
+	frog.Draw({ 0, 0 }, gfx);
 }
