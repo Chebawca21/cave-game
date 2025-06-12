@@ -15,6 +15,7 @@ private:
 	};
 public:
 	Frog(int x, int y);
+	Frog(const Vec2I& pos);
 	void Update(const Vec2I& dir, float dt, Field& field);
 	void Draw(const Vec2I& screenPos, Graphics& gfx) const;
 	Vec2I GetPos() const;

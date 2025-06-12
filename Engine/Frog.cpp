@@ -13,19 +13,35 @@ Frog::Frog(int x, int y)
 	}
 }
 
+Frog::Frog(const Vec2I& pos)
+	:
+	Frog(pos.x, pos.y)
+{}
+
 void Frog::Update(const Vec2I& dir, float dt, Field& field)
 {
 	if (vel.GetLength() == 0.0f && dir.GetLength() != 0)
 	{
-		Field::Wall wall = field.GetWall(pos + dir);
-		if (wall != Field::Wall::Rock && wall != Field::Wall::HardRock)
+		Object::Type obj_type = field.GetObjectType(pos + dir);
+		if (Object::IsWalkable(obj_type))
 		{
 			pos += dir;
 			vel += Vec2F(dir) * speed;
 			dist += vel * dt;
-			if (wall == Field::Wall::Sand)
+			if (obj_type == Object::Type::Sand)
 			{
-				field.DestroyWall(pos);
+				field.DestroyObject(pos);
+			}
+			field.PushObject(pos - dir, dir);
+		}
+		else if (Object::IsPushable(obj_type) && !field.IsFalling(pos + dir))
+		{
+			if (field.PushObject(pos + dir, dir))
+			{
+				field.MoveObject(pos, dir);
+				pos += dir;
+				vel += Vec2F(dir) * speed;
+				dist += vel * dt;
 			}
 		}
 	}

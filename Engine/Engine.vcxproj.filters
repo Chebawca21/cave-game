@@ -90,6 +90,12 @@
     <ClInclude Include="Frog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Object.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Boulder.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="DXErr.cpp">
@@ -137,6 +143,12 @@
     <ClCompile Include="Frog.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Object.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Boulder.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <FxCompile Include="FramebufferPS.hlsl">
@@ -158,8 +170,13 @@
     <Image Include="Sprites\frog.bmp">
       <Filter>Resource Files\Sprites</Filter>
     </Image>
-    <Image Include="Sprites\background.bmp">
+    <Image Include="..\..\..\..\Desktop\Nowy folder\objects.bmp">
       <Filter>Resource Files\Sprites</Filter>
     </Image>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="Maps\map1.txt">
+      <Filter>Resource Files\Maps</Filter>
+    </Text>
   </ItemGroup>
 </Project>

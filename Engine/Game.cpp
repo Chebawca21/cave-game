@@ -26,7 +26,7 @@ Game::Game( MainWindow& wnd )
 	wnd( wnd ),
 	gfx( wnd ),
 	field("Maps\\map1.txt"),
-	frog(1, 1)
+	frog(field.GetFrogPos())
 {
 }
 
@@ -59,6 +59,7 @@ void Game::UpdateModel()
 		dir.x++;
 	}
 	frog.Update(dir, dt, field);
+	field.Update(dt);
 }
 
 void Game::ComposeFrame()
