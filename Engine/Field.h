@@ -25,7 +25,7 @@ private:
 	private:
 		static constexpr int width = 32;
 		static constexpr int height = 32;
-		static constexpr float speed = 64.0f;
+		static constexpr float speed = 80.0f;
 		static constexpr float freeze_time = 0.5f;
 		Vec2I pos;
 		Object::Type type;
@@ -43,6 +43,7 @@ public:
 	Vec2I GetFrogPos() const;
 	bool PushObject(const Vec2I& pos, const Vec2I& dir);
 	void MoveObject(const Vec2I& pos, const Vec2I& dir);
+	bool IsEmpty(const Vec2I& pos) const;
 	bool IsFalling(const Vec2I& pos) const;
 private:
 	void StartFalling(const Vec2I& pos);

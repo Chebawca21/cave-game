@@ -36,6 +36,20 @@ void Field::Tile::Update(float dt, Field& field)
 		{
 			field.StartFalling(pos + Vec2I(0, 1));
 		}
+		else if (field.IsEmpty(pos + Vec2I(1, 0)) &&
+				 Object::IsSlippery(field.GetObjectType(pos + Vec2I(0, 1))) &&
+				 field.IsEmpty(pos + Vec2I(1, 1)))
+		{
+			field.PushObject(pos, { 1, 0 });
+			field.StartFalling(pos + Vec2I(1, 1));
+		}
+		else if (field.IsEmpty(pos + Vec2I(-1, 0)) && 
+				 Object::IsSlippery(field.GetObjectType(pos + Vec2I(0, 1))) && 
+				 field.IsEmpty(pos + Vec2I(-1, 1)))
+		{
+			field.PushObject(pos, { -1, 0 });
+			field.StartFalling(pos + Vec2I(-1, 1));
+		}
 	}
 	if (type == Object::Type::Frozen)
 	{
@@ -133,7 +147,7 @@ Object::Type Field::GetObjectType(Vec2I pos) const
 
 Vec2I Field::GetFrogPos() const
 {
-	for (auto t : tiles)
+	for (auto& t : tiles)
 	{
 		if (t.GetObjectType() == Object::Type::Frog)
 		{
@@ -169,6 +183,11 @@ void Field::MoveObject(const Vec2I& pos, const Vec2I& dir)
 	nextTile->SetObject(currTile->GetObjectType());
 	nextTile->SetMotion(dir);
 	currTile->SetObject(Object::Type::None);
+}
+
+bool Field::IsEmpty(const Vec2I& pos) const
+{
+	return tiles[pos.y * width + pos.x].IsEmpty();
 }
 
 bool Field::IsFalling(const Vec2I& pos) const

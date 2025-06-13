@@ -104,6 +104,31 @@ bool Object::IsFalling(Type type)
 	}
 }
 
+bool Object::IsSlippery(Type type)
+{
+	switch (type)
+	{
+	case Object::Type::None:
+		return false;
+	case Object::Type::Sand:
+		return true;
+	case Object::Type::Rock:
+		return false;
+	case Object::Type::HardRock:
+		return false;
+	case Object::Type::Boulder:
+		return true;
+	case Object::Type::Mine:
+		return false;
+	case Object::Type::Explosion:
+		return false;
+	case Object::Type::Frozen:
+		return false;
+	default:
+		return false;
+	}
+}
+
 bool Object::IsExplodable(Type type)
 {
 	switch (type)
