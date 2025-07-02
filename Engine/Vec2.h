@@ -58,6 +58,10 @@ public:
 	{
 		return *this = *this / rhs;
 	}
+	bool operator!=(const Vec2& rhs) const
+	{
+		return x != rhs.x || y != rhs.y;
+	}
 	T GetLength() const
 	{
 		return T(std::sqrt(GetLengthSq()));

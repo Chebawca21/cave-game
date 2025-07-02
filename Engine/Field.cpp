@@ -3,16 +3,29 @@
 #include "Rect.h"
 #include <fstream>
 
-Field::Tile::Tile(int x, int y, Object::Type type)
+Field::Tile::Tile(int x, int y, Object* pObj)
 	:
 	pos({x, y}),
-	type(type)
+	pObj(pObj)
 {
 }
 
-void Field::Tile::SetObject(Object::Type type)
+Field::Tile::Tile(const Tile& src)
+	:
+	pos(src.pos),
+	pObj(src.pObj->clone())
 {
-	this->type = type;
+}
+
+void Field::Tile::SetObject(Object* p)
+{
+	delete pObj;
+	pObj = p;
+}
+
+void Field::Tile::SetObjectPointer(Object* p)
+{
+	pObj = p;
 }
 
 void Field::Tile::Update(float dt, Field& field)
@@ -30,34 +43,32 @@ void Field::Tile::Update(float dt, Field& field)
 			}
 		}
 	}
-	if (Object::IsFalling(type) && vel.GetLength() == 0)
+	if (pObj->IsFallable() && vel.GetLength() == 0)
 	{
 		if (field.PushObject(pos, { 0, 1 }))
 		{
 			field.StartFalling(pos + Vec2I(0, 1));
 		}
 		else if (field.IsEmpty(pos + Vec2I(1, 0)) &&
-				 Object::IsSlippery(field.GetObjectType(pos + Vec2I(0, 1))) &&
+				 field.GetObjectPointer(pos + Vec2I(0, 1))->IsSlippery() &&
 				 field.IsEmpty(pos + Vec2I(1, 1)))
 		{
 			field.PushObject(pos, { 1, 0 });
 			field.StartFalling(pos + Vec2I(1, 1));
 		}
 		else if (field.IsEmpty(pos + Vec2I(-1, 0)) && 
-				 Object::IsSlippery(field.GetObjectType(pos + Vec2I(0, 1))) && 
+			     field.GetObjectPointer(pos + Vec2I(0, 1))->IsSlippery() &&
 				 field.IsEmpty(pos + Vec2I(-1, 1)))
 		{
 			field.PushObject(pos, { -1, 0 });
 			field.StartFalling(pos + Vec2I(-1, 1));
 		}
 	}
-	if (type == Object::Type::Frozen)
+	if (pObj->GetType() == Object::Type::Frozen)
 	{
-		curr_freeze_time -= dt;
-		if (curr_freeze_time <= 0.0f)
+		if (pObj->Update(dt))
 		{
-			curr_freeze_time = 0.0f;
-			type = Object::Type::None;
+			Unfreeze();
 		}
 	}
 }
@@ -71,13 +82,12 @@ void Field::Tile::Draw(const Vec2I& screenPos, const Surface& sprite, Graphics& 
 	}
 	const int x = screenPos.x + (posFixed.x * width) + int(dist.x);
 	const int y = screenPos.y + (posFixed.y * height) + int(dist.y);
-	auto effect = SpriteEffect::Copy();
-	Object::Draw({ x, y }, type, sprite, chroma, gfx);
+	pObj->Draw({ x, y }, sprite, chroma, gfx);
 }
 
 bool Field::Tile::IsEmpty() const
 {
-	return type == Object::Type::None;
+	return pObj->GetType() == Object::Type::None;
 }
 
 void Field::Tile::SetMotion(const Vec2I& dir)
@@ -87,8 +97,8 @@ void Field::Tile::SetMotion(const Vec2I& dir)
 
 void Field::Tile::Freeze()
 {
-	type = Object::Type::Frozen;
-	curr_freeze_time = freeze_time;
+	// pObj is not deleted because freezing occurs after pObj is shallow copied
+	pObj = new Frozen();
 }
 
 bool Field::Tile::IsFalling() const
@@ -101,9 +111,9 @@ void Field::Tile::StartFalling()
 	falling = true;
 }
 
-Object::Type Field::Tile::GetObjectType() const
+Object* Field::Tile::GetObjectPointer() const
 {
-	return type;
+	return pObj;
 }
 
 Vec2I Field::Tile::GetPos() const
@@ -111,25 +121,68 @@ Vec2I Field::Tile::GetPos() const
 	return pos;
 }
 
+Field::Tile::~Tile()
+{
+	delete pObj;
+	pObj = nullptr;
+}
+
+void Field::Tile::Unfreeze()
+{
+	delete pObj;
+	pObj = new None();
+}
+
 Field::Field(const std::string& filename)
 	:
-	sprite_objects("Sprites\\objects.bmp")
+	sprite_objects("Sprites\\objects.bmp"),
+	frogPos({0, 0})
 {
 	std::ifstream map(filename);
-	/*tiles.reserve(width * height);*/
 	int i = 0;
 	int rows = 0;
 	for (std::string line; std::getline(map, line); )
 	{
 		for (auto c : line)
 		{
-			tiles.emplace_back(i % width, i / width, Object::GetType(c));
+			Object* pObj;
+			if (c == 'H')
+			{
+				pObj = new HardRock();
+			}
+			else if (c == 'R')
+			{
+				pObj = new Rock();
+			}
+			else if (c == 'S')
+			{
+				pObj = new Sand();
+			}
+			else if (c == 'B')
+			{
+				pObj = new Boulder();
+			}
+			else if (c == 'F')
+			{
+				frogPos = { i % width, i / width };
+				pObj = new None();
+			}
+			else
+			{
+				pObj = new None();
+			}
+			tiles.emplace_back(i % width, i / width, pObj);
 			i++;
 		}
 		rows++;
 	}
 	height = rows;
 	width = int(tiles.size()) / height;
+}
+
+void Field::SetFrogPos(const Vec2I& pos)
+{
+	frogPos = pos;
 }
 
 void Field::Update(float dt)
@@ -140,21 +193,14 @@ void Field::Update(float dt)
 	}
 }
 
-Object::Type Field::GetObjectType(Vec2I pos) const
+Object* Field::GetObjectPointer(Vec2I pos) const
 {
-	return tiles[pos.y * width + pos.x].GetObjectType();
+	return tiles[pos.y * width + pos.x].GetObjectPointer();
 }
 
 Vec2I Field::GetFrogPos() const
 {
-	for (auto& t : tiles)
-	{
-		if (t.GetObjectType() == Object::Type::Frog)
-		{
-			return t.GetPos();
-		}
-	}
-	return { -1, -1 };
+	return frogPos;
 }
 
 bool Field::PushObject(const Vec2I& pos, const Vec2I& dir)
@@ -162,9 +208,9 @@ bool Field::PushObject(const Vec2I& pos, const Vec2I& dir)
 	const auto movedPos = pos + dir;
 	auto currTile = &tiles[pos.y * width + pos.x];
 	auto nextTile = &tiles[movedPos.y * width + movedPos.x];
-	if (nextTile->IsEmpty())
+	if (nextTile->IsEmpty() && movedPos != frogPos)
 	{
-		nextTile->SetObject(currTile->GetObjectType());
+		nextTile->SetObject(currTile->GetObjectPointer());
 		nextTile->SetMotion(dir);
 		currTile->Freeze();
 		return true;
@@ -180,19 +226,32 @@ void Field::MoveObject(const Vec2I& pos, const Vec2I& dir)
 	const auto movedPos = pos + dir;
 	auto currTile = &tiles[pos.y * width + pos.x];
 	auto nextTile = &tiles[movedPos.y * width + movedPos.x];
-	nextTile->SetObject(currTile->GetObjectType());
+	nextTile->SetObject(currTile->GetObjectPointer());
 	nextTile->SetMotion(dir);
-	currTile->SetObject(Object::Type::None);
+	currTile->SetObjectPointer(new None());
 }
 
 bool Field::IsEmpty(const Vec2I& pos) const
 {
-	return tiles[pos.y * width + pos.x].IsEmpty();
+	if (tiles[pos.y * width + pos.x].IsEmpty() &&
+		pos != frogPos)
+	{
+		return true;
+	}
+	else
+	{
+		return false;
+	}
 }
 
 bool Field::IsFalling(const Vec2I& pos) const
 {
 	return tiles[pos.y * width + pos.x].IsFalling();
+}
+
+void Field::Freeze(const Vec2I& pos)
+{
+	tiles[pos.y * width + pos.x].SetObject(new Frozen());
 }
 
 void Field::StartFalling(const Vec2I& pos)
@@ -210,5 +269,5 @@ void Field::Draw(Graphics& gfx) const
 
 void Field::DestroyObject(const Vec2I& pos)
 {
-	tiles[pos.y * width + pos.x].SetObject(Object::Type::None);
+	tiles[pos.y * width + pos.x].SetObject(new None());
 }

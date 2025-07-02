@@ -59,6 +59,7 @@ void Game::UpdateModel()
 		dir.x++;
 	}
 	frog.Update(dir, dt, field);
+	field.SetFrogPos(frog.GetPos());
 	field.Update(dt);
 }
 

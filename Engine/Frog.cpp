@@ -22,19 +22,19 @@ void Frog::Update(const Vec2I& dir, float dt, Field& field)
 {
 	if (vel.GetLength() == 0.0f && dir.GetLength() != 0)
 	{
-		Object::Type obj_type = field.GetObjectType(pos + dir);
-		if (Object::IsWalkable(obj_type))
+		const Object* const pObj = field.GetObjectPointer(pos + dir);
+		if (pObj->IsWalkable())
 		{
+			field.Freeze(pos);
 			pos += dir;
 			vel += Vec2F(dir) * speed;
 			dist += vel * dt;
-			if (obj_type == Object::Type::Sand)
+			if (pObj->GetType() == Object::Type::Sand)
 			{
 				field.DestroyObject(pos);
 			}
-			field.PushObject(pos - dir, dir);
 		}
-		else if (Object::IsPushable(obj_type) && !field.IsFalling(pos + dir))
+		else if (pObj->IsPushable() && !field.IsFalling(pos + dir))
 		{
 			if (field.PushObject(pos + dir, dir))
 			{
