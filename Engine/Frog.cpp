@@ -71,3 +71,13 @@ Vec2I Frog::GetPos() const
 {
 	return pos;
 }
+
+void Frog::TakeMine()
+{
+	nMines--;
+}
+
+void Frog::GiveMine()
+{
+	nMines++;
+}

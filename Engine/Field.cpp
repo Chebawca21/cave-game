@@ -2,6 +2,7 @@
 #include "SpriteEffect.h"
 #include "Rect.h"
 #include <fstream>
+#include <algorithm>
 
 Field::Tile::Tile(int x, int y, Object* pObj)
 	:
@@ -64,11 +65,19 @@ void Field::Tile::Update(float dt, Field& field)
 			field.StartFalling(pos + Vec2I(-1, 1));
 		}
 	}
-	if (pObj->GetType() == Object::Type::Frozen)
+	if (pObj->Update(dt))
 	{
-		if (pObj->Update(dt))
+		if (pObj->GetType() == Object::Type::Frozen)
 		{
 			Unfreeze();
+		}
+		else if (pObj->GetType() == Object::Type::Mine)
+		{
+			field.Explode(pos);
+		}
+		else if (pObj->GetType() == Object::Type::Explosion)
+		{
+			SetObject(new None());
 		}
 	}
 }
@@ -251,12 +260,39 @@ bool Field::IsFalling(const Vec2I& pos) const
 
 void Field::Freeze(const Vec2I& pos)
 {
-	tiles[pos.y * width + pos.x].SetObject(new Frozen());
+	auto tile = &tiles[pos.y * width + pos.x];
+	if (tile->IsEmpty())
+	{
+		tile->SetObject(new Frozen());
+	}
+}
+
+void Field::SpawnMine()
+{
+	auto tile = &tiles[frogPos.y * width + frogPos.x];
+	tile->SetObject(new Mine());
 }
 
 void Field::StartFalling(const Vec2I& pos)
 {
 	tiles[pos.y * width + pos.x].StartFalling();
+}
+
+void Field::Explode(const Vec2I& pos)
+{
+	int xs[] = { -1, 0, 1 };
+	int ys[] = { -1, 0, 1 };
+	for (int i = 0; i <= 2; i++)
+	{
+		for (int j = 0; j <= 2; j++)
+		{
+			auto tile = &tiles[(pos.y + ys[j]) * width + (pos.x + xs[i])];
+			if (tile->GetObjectPointer()->IsExplodable())
+			{
+				tile->SetObject(new Explosion());
+			}
+		}
+	}
 }
 
 void Field::Draw(Graphics& gfx) const

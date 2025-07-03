@@ -19,6 +19,8 @@ public:
 	void Update(const Vec2I& dir, float dt, Field& field);
 	void Draw(const Vec2I& screenPos, Graphics& gfx) const;
 	Vec2I GetPos() const;
+	void TakeMine();
+	void GiveMine();
 private:
 	static constexpr int width = 32;
 	static constexpr int height = 32;
@@ -29,4 +31,5 @@ private:
 	Surface sprite;
 	std::vector<Animation> animations;
 	int curAnim = 0;
+	int nMines = 5;
 };

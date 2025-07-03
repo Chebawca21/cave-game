@@ -1,5 +1,6 @@
 #include "Object.h"
 #include "SpriteEffect.h"
+#include <cmath>
 
 Object::Object(bool walkable, bool pushable, bool fallable, bool slippery, bool explodable)
 	:
@@ -12,73 +13,26 @@ Object::Object(bool walkable, bool pushable, bool fallable, bool slippery, bool 
 
 bool Object::IsWalkable() const
 {
-	/*switch (type)
-	{
-	case Object::Type::Mine:
-		return false;
-	case Object::Type::Explosion:
-		return true;
-	default:
-		return true;
-	}*/
 	return walkable;
 }
 
 bool Object::IsPushable() const
 {
-	/*switch (type)
-	{
-	case Object::Type::Mine:
-		return false;
-	case Object::Type::Explosion:
-		return false;
-	default:
-		return true;
-	}*/
 	return pushable;
 }
 
 bool Object::IsFallable() const
 {
-	/*switch (type)
-	{
-	case Object::Type::Mine:
-		return false;
-	case Object::Type::Explosion:
-		return false;
-	default:
-		return false;
-	}*/
 	return fallable;
 }
 
 bool Object::IsSlippery() const
 {
-	/*switch (type)
-	{
-	case Object::Type::Mine:
-		return false;
-	case Object::Type::Explosion:
-		return false;
-	default:
-		return false;
-	}*/
 	return slippery;
 }
 
 bool Object::IsExplodable() const
 {
-	/*switch (type)
-	{
-	case Object::Type::Mine:
-		return true;
-	case Object::Type::Explosion:
-		return true;
-	case Object::Type::Frog:
-		return true;
-	default:
-		return true;
-	}*/
 	return explodable;
 }
 
@@ -86,22 +40,6 @@ bool Object::Update(float dt)
 {
 	return false;
 }
-
-
-//void Object::Draw(const Vec2I& pos, Type type, const Surface& sprite, Color chroma, Graphics& gfx)
-//{
-//	switch (type)
-//	{
-//	case Object::Type::Mine:
-//		gfx.DrawSprite(pos.x, pos.y, { {width * 5, 0}, width, height }, sprite, SpriteEffect::Chroma(chroma));
-//		break;
-//	case Object::Type::Explosion:
-//		gfx.DrawSprite(pos.x, pos.y, { {width * 6, 0}, width, height }, sprite, SpriteEffect::Chroma(chroma));
-//		break;
-//	default:
-//		break;
-//	}
-//}
 
 None::None()
 	:
@@ -234,8 +172,82 @@ Object* Frozen::clone() const
 
 bool Frozen::Update(float dt)
 {
+	// true indicates that the timer reached zero and tile can be unfrozen
 	curr_freeze_time -= dt;
 	if (curr_freeze_time <= 0.0f)
+	{
+		return true;
+	}
+	return false;
+}
+
+Mine::Mine()
+	:
+	Object(false, false, false, false, true)
+{
+}
+void Mine::Draw(const Vec2I& pos, const Surface& sprite, Color chroma, Graphics& gfx) const
+{
+	float percentage = curr_time / blend_cycle;
+	if (int(std::floor(percentage)) % 2 == 0)
+	{
+		percentage = 1 - std::fmod(percentage, 1.0f);
+	}
+	else
+	{
+		percentage = std::fmod(percentage, 1.0f);
+	}
+	auto effect = SpriteEffect::Blend(chroma, blend, percentage);
+	gfx.DrawSprite(pos.x, pos.y, { {width * 5, 0}, width, height }, sprite, effect);
+}
+
+Object::Type Mine::GetType() const
+{
+	return Type::Mine;
+}
+
+Object* Mine::clone() const
+{
+	return new Mine();
+}
+
+bool Mine::Update(float dt)
+{
+	// true indicates that the mine is set to explode
+	curr_time += dt;
+	if (curr_time >= explosion_time)
+	{
+		return true;
+	}
+	return false;
+}
+
+Explosion::Explosion()
+	:
+	Object(true, false, false, false, true)
+{
+}
+
+void Explosion::Draw(const Vec2I& pos, const Surface& sprite, Color chroma, Graphics& gfx) const
+{
+	gfx.DrawSprite(pos.x, pos.y, { {width * 6, 0}, width, height }, sprite, SpriteEffect::Chroma(chroma));
+}
+
+Object::Type Explosion::GetType() const
+{
+	return Type::Explosion;
+}
+
+Object* Explosion::clone() const
+{
+	return new Explosion();
+}
+
+bool Explosion::Update(float dt)
+{
+	// true indicates that the explosion should disappear
+	curr_time += dt;
+	if (curr_time >= explosion_time)
 	{
 		return true;
 	}

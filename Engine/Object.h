@@ -96,3 +96,31 @@ private:
 	static constexpr float freeze_time = 0.5f;
 	float curr_freeze_time = 0.0f;
 };
+
+class Mine : public Object
+{
+public:
+	Mine();
+	void Draw(const Vec2I& pos, const Surface& sprite, Color chroma, Graphics& gfx) const override;
+	Type GetType() const override;
+	Object* clone() const override;
+	bool Update(float dt) override;
+private:
+	static constexpr float explosion_time = 4.0f;
+	static constexpr Color blend = Colors::White;
+	static constexpr float blend_cycle = explosion_time / 4;
+	float curr_time = 0.0f;
+};
+
+class Explosion : public Object
+{
+public:
+	Explosion();
+	void Draw(const Vec2I& pos, const Surface& sprite, Color chroma, Graphics& gfx) const override;
+	Type GetType() const override;
+	Object* clone() const override;
+	bool Update(float dt) override;
+private:
+	static constexpr float explosion_time = 2.0f;
+	float curr_time = 0.0f;
+};

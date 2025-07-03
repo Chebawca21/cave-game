@@ -51,8 +51,10 @@ public:
 	bool IsEmpty(const Vec2I& pos) const;
 	bool IsFalling(const Vec2I& pos) const;
 	void Freeze(const Vec2I& pos);
+	void SpawnMine();
 private:
 	void StartFalling(const Vec2I& pos);
+	void Explode(const Vec2I& pos);
 private:
 	static constexpr Color chroma = Colors::Magenta;
 	Surface sprite_objects;

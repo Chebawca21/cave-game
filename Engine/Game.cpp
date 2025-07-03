@@ -58,6 +58,11 @@ void Game::UpdateModel()
 	{
 		dir.x++;
 	}
+	if (wnd.kbd.KeyIsPressed('C'))
+	{
+		field.SpawnMine();
+		frog.TakeMine();
+	}
 	frog.Update(dir, dt, field);
 	field.SetFrogPos(frog.GetPos());
 	field.Update(dt);
